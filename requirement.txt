@@ -1,0 +1,6 @@
+pandas
+scikit-learn
+numpy
+xgboost
+matplotlib # Only if you use it in the prediction script for visualization, otherwise not strictly needed for deployment
+joblib # If you use joblib to save/load the model
