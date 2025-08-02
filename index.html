@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Salary Predictor</title>
+    <!-- Tailwind CSS CDN for easy styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for the Inter font and overall look */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Light gray background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 1.5rem; /* More rounded corners */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 2.5rem;
+            max-width: 28rem; /* Constrain width for better mobile view */
+            width: 100%;
+        }
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: block;
+            color: #374151;
+        }
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.75rem; /* Rounded input fields */
+            font-size: 1rem;
+            color: #374151;
+            background-color: #f9fafb; /* Slightly different background for inputs */
+            appearance: none; /* Remove default select arrow */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none'%3e%3cpath d='M7 7l3-3 3 3m0 6l-3 3-3-3' stroke='%236B7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1.5em 1.5em;
+        }
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: #6366f1; /* Indigo color on focus */
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+        .btn-predict {
+            width: 100%;
+            padding: 0.85rem 1.5rem;
+            background-color: #6366f1; /* Indigo button */
+            color: #ffffff;
+            font-weight: 700;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3), 0 2px 4px -1px rgba(99, 102, 241, 0.15);
+            border: none;
+            display: block; /* Ensure it takes full width */
+            margin-top: 1.5rem;
+        }
+        .btn-predict:hover {
+            background-color: #4f46e5; /* Darker indigo on hover */
+            transform: translateY(-1px);
+        }
+        .btn-predict:active {
+            background-color: #4338ca; /* Even darker on active */
+            transform: translateY(0);
+        }
+        .result-box {
+            background-color: #e0e7ff; /* Light indigo background */
+            border: 1px solid #a5b4fc;
+            border-radius: 0.75rem;
+            padding: 1rem 1.5rem;
+            margin-top: 1.5rem;
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #374151;
+            text-align: center;
+        }
+        .error-message {
+            background-color: #fee2e2; /* Light red background */
+            border: 1px solid #fca5a5;
+            border-radius: 0.75rem;
+            padding: 0.75rem 1.25rem;
+            margin-top: 1rem;
+            color: #dc2626;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-3xl font-extrabold text-center text-gray-800 mb-6">Salary Predictor 💰</h1>
+
+        <form id="predictionForm" class="space-y-4">
+            <div class="form-group">
+                <label for="age">Age:</label>
+                <input type="number" id="age" name="age" min="18" max="65" required class="focus:ring-indigo-500 focus:border-indigo-500">
+            </div>
+
+            <div class="form-group">
+                <label for="gender">Gender:</label>
+                <select id="gender" name="gender" required class="focus:ring-indigo-500 focus:border-indigo-500">
+                    <option value="">Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="educationLevel">Education Level:</label>
+                <select id="educationLevel" name="educationLevel" required class="focus:ring-indigo-500 focus:border-indigo-500">
+                    <option value="">Select Education Level</option>
+                    <option value="Bachelor's">Bachelor's</option>
+                    <option value="Master's">Master's</option>
+                    <option value="PhD">PhD</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="jobTitle">Job Title:</label>
+                <select id="jobTitle" name="jobTitle" required class="focus:ring-indigo-500 focus:border-indigo-500">
+                    <option value="">Select Job Title</option>
+                    <!-- Populate with common job titles from your data or a curated list -->
+                    <option value="Software Engineer">Software Engineer</option>
+                    <option value="Data Analyst">Data Analyst</option>
+                    <option value="Senior Manager">Senior Manager</option>
+                    <option value="Sales Associate">Sales Associate</option>
+                    <option value="Director">Director</option>
+                    <option value="Marketing Manager">Marketing Manager</option>
+                    <option value="Financial Analyst">Financial Analyst</option>
+                    <option value="HR Manager">HR Manager</option>
+                    <option value="Project Manager">Project Manager</option>
+                    <option value="Data Scientist">Data Scientist</option>
+                    <option value="UX Designer">UX Designer</option>
+                    <option value="Accountant">Accountant</option>
+                    <option value="Operations Manager">Operations Manager</option>
+                    <option value="Product Manager">Product Manager</option>
+                    <option value="Business Analyst">Business Analyst</option>
+                    <option value="Software Developer">Software Developer</option>
+                    <option value="Senior Software Engineer">Senior Software Engineer</option>
+                    <option value="Senior Data Scientist">Senior Data Scientist</option>
+                    <option value="Senior Project Manager">Senior Project Manager</option>
+                    <option value="Sales Manager">Sales Manager</option>
+                    <option value="IT Manager">IT Manager</option>
+                    <option value="Graphic Designer">Graphic Designer</option>
+                    <option value="Customer Service Representative">Customer Service Representative</option>
+                    <option value="Research Scientist">Research Scientist</option>
+                    <option value="Web Developer">Web Developer</option>
+                    <option value="Financial Advisor">Financial Advisor</option>
+                    <option value="Business Development Manager">Business Development Manager</option>
+                    <option value="Digital Marketing Manager">Digital Marketing Manager</option>
+                    <option value="IT Support Specialist">IT Support Specialist</option>
+                    <option value="HR Generalist">HR Generalist</option>
+                    <option value="Network Engineer">Network Engineer</option>
+                    <option value="Technical Writer">Technical Writer</option>
+                    <option value="Content Marketing Manager">Content Marketing Manager</option>
+                    <option value="Copywriter">Copywriter</option>
+                    <option value="Public Relations Manager">Public Relations Manager</option>
+                    <option value="Strategy Consultant">Strategy Consultant</option>
+                    <option value="Supply Chain Manager">Supply Chain Manager</option>
+                    <option value="Technical Recruiter">Technical Recruiter</option>
+                    <option value="Training Specialist">Training Specialist</option>
+                    <option value="VP of Operations">VP of Operations</option>
+                    <option value="VP of Finance">VP of Finance</option>
+                    <option value="Chief Technology Officer">Chief Technology Officer</option>
+                    <option value="CEO">CEO</option>
+                    <option value="Chief Data Officer">Chief Data Officer</option>
+                    <option value="Director of Engineering">Director of Engineering</option>
+                    <option value="Director of Marketing">Director of Marketing</option>
+                    <option value="Director of Sales">Director of Sales</option>
+                    <option value="Director of HR">Director of HR</option>
+                    <option value="Director of Finance">Director of Finance</option>
+                    <option value="Director of Product Management">Director of Product Management</option>
+                    <option value="Director of Business Development">Director of Business Development</option>
+                    <option value="Director of Operations">Director of Operations</option>
+                    <option value="Senior Consultant">Senior Consultant</option>
+                    <option value="Senior Engineer">Senior Engineer</option>
+                    <option value="Senior Financial Advisor">Senior Financial Advisor</option>
+                    <option value="Senior HR Manager">Senior HR Manager</option>
+                    <option value="Senior Marketing Manager">Senior Marketing Manager</option>
+                    <option value="Senior Operations Manager">Senior Operations Manager</option>
+                    <option value="Senior Product Manager">Senior Product Manager</option>
+                    <option value="Senior Sales Manager">Senior Sales Manager</option>
+                    <option value="Senior Software Developer">Senior Software Developer</option>
+                    <option value="Senior UX Designer">Senior UX Designer</option>
+                    <option value="Senior Business Analyst">Senior Business Analyst</option>
+                    <option value="Senior Data Analyst">Senior Data Analyst</option>
+                    <option value="Senior Data Engineer">Senior Data Engineer</option>
+                    <option value="Senior Graphic Designer">Senior Graphic Designer</option>
+                    <option value="Senior IT Project Manager">Senior IT Project Manager</option>
+                    <option value="Senior Research Scientist">Senior Research Scientist</option>
+                    <option value="Senior Scientist">Senior Scientist</option>
+                    <option value="Senior Software Architect">Senior Software Architect</option>
+                    <option value="Senior Training Specialist">Senior Training Specialist</option>
+                    <option value="Social Media Manager">Social Media Manager</option>
+                    <option value="Supply Chain Analyst">Supply Chain Analyst</option>
+                    <option value="Technical Support Specialist">Technical Support Specialist</option>
+                    <option value="UX Researcher">UX Researcher</option>
+                    <option value="Web Designer">Web Designer</option>
+                    <option value="Junior Software Engineer">Junior Software Engineer</option>
+                    <option value="Junior Data Analyst">Junior Data Analyst</option>
+                    <option value="Junior Project Manager">Junior Project Manager</option>
+                    <option value="Junior Financial Analyst">Junior Financial Analyst</option>
+                    <option value="Junior Marketing Coordinator">Junior Marketing Coordinator</option>
+                    <option value="Junior HR Coordinator">Junior HR Coordinator</option>
+                    <option value="Junior Web Developer">Junior Web Developer</option>
+                    <option value="Junior UX Designer">Junior UX Designer</option>
+                    <option value="Junior Accountant">Junior Accountant</option>
+                    <option value="Junior Operations Analyst">Junior Operations Analyst</option>
+                    <option value="Junior Product Manager">Junior Product Manager</option>
+                    <option value="Junior Sales Representative">Junior Sales Representative</option>
+                    <option value="Junior Business Analyst">Junior Business Analyst</option>
+                    <option value="Junior Data Scientist">Junior Data Scientist</option>
+                    <option value="Junior Developer">Junior Developer</option>
+                    <option value="Junior Graphic Designer">Junior Graphic Designer</option>
+                    <option value="Junior IT Support Specialist">Junior IT Support Specialist</option>
+                    <option value="Junior Research Scientist">Junior Research Scientist</option>
+                    <option value="Junior Social Media Manager">Junior Social Media Manager</option>
+                    <option value="Junior Technical Writer">Junior Technical Writer</option>
+                    <option value="Junior Web Designer">Junior Web Designer</option>
+                    <option value="Junior Account Manager">Junior Account Manager</option>
+                    <option value="Junior Advertising Coordinator">Junior Advertising Coordinator</option>
+                    <option value="Junior Business Development Associate">Junior Business Development Associate</option>
+                    <option value="Junior Business Operations Analyst">Junior Business Operations Analyst</option>
+                    <option value="Junior Content Marketing Manager">Junior Content Marketing Manager</option>
+                    <option value="Junior Copywriter">Junior Copywriter</option>
+                    <option value="Junior Customer Service Representative">Junior Customer Service Representative</option>
+                    <option value="Junior Customer Support Specialist">Junior Customer Support Specialist</option>
+                    <option value="Junior Digital Marketing Manager">Junior Digital Marketing Manager</option>
+                    <option value="Junior Event Coordinator">Junior Event Coordinator</option>
+                    <option value="Junior Financial Advisor">Junior Financial Advisor</option>
+                    <option value="Junior HR Generalist">Junior HR Generalist</option>
+                    <option value="Junior Marketing Analyst">Junior Marketing Analyst</option>
+                    <option value="Junior Marketing Specialist">Junior Marketing Specialist</option>
+                    <option value="Junior Operations Coordinator">Junior Operations Coordinator</option>
+                    <option value="Junior Operations Manager">Junior Operations Manager</option>
+                    <option value="Junior Public Relations Specialist">Junior Public Relations Specialist</option>
+                    <option value="Junior Recruiter">Junior Recruiter</option>
+                    <option value="Junior Social Media Specialist">Junior Social Media Specialist</option>
+                    <option value="Junior Software Developer">Junior Software Developer</option>
+                    <option value="Junior Supply Chain Analyst">Junior Supply Chain Analyst</option>
+                    <option value="Junior Technical Recruiter">Junior Technical Recruiter</option>
+                    <option value="Junior Training Specialist">Junior Training Specialist</option>
+                    <option value="Junior UX Researcher">Junior UX Researcher</option>
+                    <option value="Senior Account Executive">Senior Account Executive</option>
+                    <option value="Senior Account Manager">Senior Account Manager</option>
+                    <option value="Senior Accountant">Senior Accountant</option>
+                    <option value="Senior Business Development Manager">Senior Business Development Manager</option>
+                    <option value="Senior Customer Service Manager">Senior Customer Service Manager</option>
+                    <option value="Senior Data Analyst">Senior Data Analyst</option>
+                    <option value="Senior Data Scientist">Senior Data Scientist</option>
+                    <option value="Senior Digital Marketing Manager">Senior Digital Marketing Manager</option>
+                    <option value="Senior Financial Manager">Senior Financial Manager</option>
+                    <option value="Senior HR Specialist">Senior HR Specialist</option>
+                    <option value="Senior Human Resources Coordinator">Senior Human Resources Coordinator</option>
+                    <option value="Senior Human Resources Manager">Senior Human Resources Manager</option>
+                    <option value="Senior Human Resources Specialist">Senior Human Resources Specialist</option>
+                    <option value="Senior IT Consultant">Senior IT Consultant</option>
+                    <option value="Senior IT Project Manager">Senior IT Project Manager</option>
+                    <option value="Senior IT Support Specialist">Senior IT Support Specialist</option>
+                    <option value="Senior Manager">Senior Manager</option>
+                    <option value="Senior Marketing Analyst">Senior Marketing Analyst</option>
+                    <option value="Senior Marketing Coordinator">Senior Marketing Coordinator</option>
+                    <option value="Senior Marketing Director">Senior Marketing Director</option>
+                    <option value="Senior Marketing Specialist">Senior Marketing Specialist</option>
+                    <option value="Senior Operations Analyst">Senior Operations Analyst</option>
+                    <option value="Senior Operations Coordinator">Senior Operations Coordinator</option>
+                    <option value="Senior Product Designer">Senior Product Designer</option>
+                    <option value="Senior Product Development Manager">Senior Product Development Manager</option>
+                    <option value="Senior Product Marketing Manager">Senior Product Marketing Manager</option>
+                    <option value="Senior Project Coordinator">Senior Project Coordinator</option>
+                    <option value="Senior Quality Assurance Analyst">Senior Quality Assurance Analyst</option>
+                    <option value="Senior Researcher">Senior Researcher</option>
+                    <option value="Senior Sales Manager">Senior Sales Manager</option>
+                    <option value="Senior Sales Representative">Senior Sales Representative</option>
+                    <option value="Senior Software Architect">Senior Software Architect</option>
+                    <option value="Senior Software Developer">Senior Software Developer</option>
+                    <option value="Senior Training Specialist">Senior Training Specialist</option>
+                    <option value="Social Media Specialist">Social Media Specialist</option>
+                    <option value="Software Manager">Software Manager</option>
+                    <option value="Software Project Manager">Software Project Manager</option>
+                    <option value="Strategy Consultant">Strategy Consultant</option>
+                    <option value="Supply Chain Manager">Supply Chain Manager</option>
+                    <option value="Technical Recruiter">Technical Recruiter</option>
+                    <option value="Technical Support Specialist">Technical Support Specialist</option>
+                    <option value="Training Specialist">Training Specialist</option>
+                    <option value="UX Designer">UX Designer</option>
+                    <option value="UX Researcher">UX Researcher</option>
+                    <option value="VP of Finance">VP of Finance</option>
+                    <option value="Web Developer">Web Developer</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="yearsOfExperience">Years of Experience:</label>
+                <input type="number" id="yearsOfExperience" name="yearsOfExperience" step="0.5" min="0" max="30" required class="focus:ring-indigo-500 focus:border-indigo-500">
+            </div>
+
+            <button type="submit" class="btn-predict">Predict Salary</button>
+        </form>
+
+        <div id="result" class="result-box hidden">
+            Predicted Salary: $<span id="predictedSalary"></span>
+        </div>
+        <div id="errorMessage" class="error-message hidden"></div>
+    </div>
+
+    <script>
+        // --- Simulated Model Components (based on your notebook output) ---
+        // These mappings are derived from the LabelEncoder classes you printed.
+        // In a real app, these would be part of your backend model.
+        const genderEncoder = {
+            'Female': 0,
+            'Male': 1
+        };
+
+        const educationEncoder = {
+            "Bachelor's": 0,
+            "Master's": 1,
+            'PhD': 2
+        };
+
+        // This is a partial list. In a real app, you'd need all 174 job titles.
+        // For demonstration, we'll use a simplified mapping or directly use the select value.
+        const jobTitleEncoder = {
+            'Software Engineer': 130, // Example: map to an arbitrary integer
+            'Data Analyst': 22,
+            'Senior Manager': 116,
+            'Sales Associate': 98,
+            'Director': 33,
+            'Marketing Manager': 71,
+            'Financial Analyst': 40,
+            'HR Manager': 45,
+            'Project Manager': 94,
+            'Data Scientist': 23,
+            'UX Designer': 154,
+            'Accountant': 1,
+            'Operations Manager': 88,
+            'Product Manager': 91,
+            'Business Analyst': 10,
+            'Software Developer': 129,
+            'Senior Software Engineer': 128,
+            'Senior Data Scientist': 28,
+            'Senior Project Manager': 125,
+            'Sales Manager': 102,
+            'IT Manager': 50,
+            'Graphic Designer': 42,
+            'Customer Service Representative': 19,
+            'Research Scientist': 97,
+            'Web Developer': 160,
+            'Financial Advisor': 39,
+            'Business Development Manager': 13,
+            'Digital Marketing Manager': 31,
+            'IT Support Specialist': 53,
+            'HR Generalist': 43,
+            'Network Engineer': 79,
+            'Technical Writer': 148,
+            'Content Marketing Manager': 17,
+            'Copywriter': 18,
+            'Public Relations Manager': 96,
+            'Strategy Consultant': 140,
+            'Supply Chain Manager': 145,
+            'Technical Recruiter': 146,
+            'Training Specialist': 149,
+            'VP of Operations': 158,
+            'VP of Finance': 157,
+            'Chief Technology Officer': 16,
+            'CEO': 14,
+            'Chief Data Officer': 15,
+            'Director of Engineering': 34,
+            'Director of Marketing': 36,
+            'Director of Sales': 38,
+            'Director of HR': 35,
+            'Director of Finance': 34,
+            'Director of Product Management': 37,
+            'Director of Business Development': 32,
+            'Director of Operations': 37,
+            'Senior Consultant': 20,
+            'Senior Engineer': 38,
+            'Senior Financial Advisor': 41,
+            'Senior HR Manager': 46,
+            'Senior Marketing Manager': 72,
+            'Senior Operations Manager': 89,
+            'Senior Product Manager': 92,
+            'Senior Sales Manager': 103,
+            'Senior Software Developer': 127,
+            'Senior UX Designer': 155,
+            'Senior Business Analyst': 11,
+            'Senior Data Analyst': 25,
+            'Senior Data Engineer': 26,
+            'Senior Graphic Designer': 44,
+            'Senior IT Project Manager': 51,
+            'Senior Research Scientist': 99,
+            'Senior Scientist': 100,
+            'Senior Software Architect': 126,
+            'Senior Training Specialist': 150,
+            'Social Media Manager': 120,
+            'Supply Chain Analyst': 144,
+            'Technical Support Specialist': 147,
+            'UX Researcher': 156,
+            'Web Designer': 159,
+            'Junior Software Engineer': 69,
+            'Junior Data Analyst': 60,
+            'Junior Project Manager': 67,
+            'Junior Financial Analyst': 63,
+            'Junior Marketing Coordinator': 65,
+            'Junior HR Coordinator': 64,
+            'Junior Web Developer': 70,
+            'Junior UX Designer': 68,
+            'Junior Accountant': 55,
+            'Junior Operations Analyst': 66,
+            'Junior Product Manager': 67,
+            'Junior Sales Representative': 69,
+            'Junior Business Analyst': 57,
+            'Junior Data Scientist': 61,
+            'Junior Developer': 62,
+            'Junior Graphic Designer': 63,
+            'Junior IT Support Specialist': 64,
+            'Junior Research Scientist': 68,
+            'Junior Social Media Manager': 69,
+            'Junior Technical Writer': 70,
+            'Junior Web Designer': 70,
+            'Junior Account Manager': 54,
+            'Junior Advertising Coordinator': 56,
+            'Junior Business Development Associate': 58,
+            'Junior Business Operations Analyst': 59,
+            'Junior Content Marketing Manager': 60,
+            'Junior Copywriter': 61,
+            'Junior Customer Service Representative': 62,
+            'Junior Customer Support Specialist': 63,
+            'Junior Digital Marketing Manager': 64,
+            'Junior Event Coordinator': 65,
+            'Junior Financial Advisor': 66,
+            'Junior HR Generalist': 67,
+            'Junior Marketing Analyst': 68,
+            'Junior Marketing Specialist': 69,
+            'Junior Operations Coordinator': 70,
+            'Junior Operations Manager': 71,
+            'Junior Public Relations Specialist': 72,
+            'Junior Recruiter': 73,
+            'Junior Social Media Specialist': 74,
+            'Junior Software Developer': 75,
+            'Junior Supply Chain Analyst': 76,
+            'Junior Technical Recruiter': 77,
+            'Junior Training Specialist': 78,
+            'Junior UX Researcher': 79,
+            'Senior Account Executive': 105,
+            'Senior Account Manager': 106,
+            'Senior Accountant': 107,
+            'Senior Business Development Manager': 110,
+            'Senior Customer Service Manager': 111,
+            'Senior Data Analyst': 112,
+            'Senior Data Scientist': 113,
+            'Senior Digital Marketing Manager': 114,
+            'Senior Financial Manager': 115,
+            'Senior HR Specialist': 116,
+            'Senior Human Resources Coordinator': 117,
+            'Senior Human Resources Manager': 118,
+            'Senior Human Resources Specialist': 119,
+            'Senior IT Consultant': 120,
+            'Senior IT Project Manager': 121,
+            'Senior IT Support Specialist': 122,
+            'Senior Manager': 123,
+            'Senior Marketing Analyst': 124,
+            'Senior Marketing Coordinator': 125,
+            'Senior Marketing Director': 126,
+            'Senior Marketing Specialist': 127,
+            'Senior Operations Analyst': 128,
+            'Senior Operations Coordinator': 129,
+            'Senior Product Designer': 130,
+            'Senior Product Development Manager': 131,
+            'Senior Product Marketing Manager': 132,
+            'Senior Project Coordinator': 133,
+            'Senior Quality Assurance Analyst': 134,
+            'Senior Researcher': 135,
+            'Senior Sales Manager': 136,
+            'Senior Sales Representative': 137,
+            'Senior Software Architect': 138,
+            'Social Media Specialist': 139,
+            'Software Manager': 141,
+            'Software Project Manager': 142,
+            'Strategy Consultant': 143,
+        };
+
+
+        // --- Simplified Scaler Parameters (from your StandardScaler output, conceptually) ---
+        // These are example mean and std values. In a real app, you'd get these from scaler.mean_ and scaler.scale_
+        // For accurate simulation, you'd need the actual mean and std dev for each feature from your scaler.pkl
+        const featureMeans = {
+            'Age': 37.38,
+            'Gender': 0.5, // Assuming 0 for Female, 1 for Male, roughly even distribution
+            'Education Level': 1.0, // Roughly middle of 0,1,2
+            'Job Title': 80.0, // Roughly middle of 0-173
+            'Years of Experience': 10.06
+        };
+
+        const featureStds = {
+            'Age': 8.08,
+            'Gender': 0.5,
+            'Education Level': 0.81,
+            'Job Title': 50.0, // Placeholder, needs actual std dev
+            'YearsOfExperience': 6.54
+        };
+
+        // --- Simplified Prediction Model (conceptual replacement for XGBoost) ---
+        // This is a highly simplified linear model.
+        // In a real application, you would send the preprocessed data to your backend
+        // where the actual XGBoost model (model_2.pkl) would make the prediction.
+        function predictSalary(features) {
+            // Example: A very basic linear model for demonstration
+            // Coefficients would come from your trained model
+            const age_coeff = 1500;
+            const gender_coeff = 5000;
+            const education_coeff = 10000;
+            const job_title_coeff = 100;
+            const experience_coeff = 3000;
+            const intercept = 50000; // Base salary
+
+            let predicted = intercept;
+            predicted += features.age * age_coeff;
+            predicted += features.gender * gender_coeff;
+            predicted += features.educationLevel * education_coeff;
+            predicted += features.jobTitle * job_title_coeff;
+            predicted += features.yearsOfExperience * experience_coeff;
+
+            // Add some randomness to make it less deterministic for demo
+            predicted += (Math.random() - 0.5) * 5000; // +/- 2500
+
+            return Math.max(0, predicted); // Ensure non-negative salary
+        }
+
+        // --- Event Listener for Form Submission ---
+        document.getElementById('predictionForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            // Clear previous messages
+            document.getElementById('result').classList.add('hidden');
+            document.getElementById('errorMessage').classList.add('hidden');
+            document.getElementById('errorMessage').textContent = '';
+
+            // Get input values
+            const age = parseFloat(document.getElementById('age').value);
+            const gender = document.getElementById('gender').value;
+            const educationLevel = document.getElementById('educationLevel').value;
+            const jobTitle = document.getElementById('jobTitle').value;
+            const yearsOfExperience = parseFloat(document.getElementById('yearsOfExperience').value);
+
+            // Basic validation
+            if (isNaN(age) || !gender || !educationLevel || !jobTitle || isNaN(yearsOfExperience)) {
+                document.getElementById('errorMessage').textContent = 'Please fill in all fields correctly.';
+                document.getElementById('errorMessage').classList.remove('hidden');
+                return;
+            }
+
+            // --- Simulate Preprocessing ---
+            // 1. Label Encoding
+            const encodedGender = genderEncoder[gender];
+            const encodedEducation = educationEncoder[educationLevel];
+            const encodedJobTitle = jobTitleEncoder[jobTitle]; // Use the mapped value
+
+            // Check if job title is in our simulated encoder
+            if (encodedJobTitle === undefined) {
+                document.getElementById('errorMessage').textContent = 'Selected Job Title is not recognized by the simulated model. Please choose another.';
+                document.getElementById('errorMessage').classList.remove('hidden');
+                return;
+            }
+
+            // 2. Standard Scaling (Simulated)
+            // This is a simplified version. For true scaling, you need the exact mean and std dev
+            // from your trained StandardScaler for each feature.
+            const scaledAge = (age - featureMeans.Age) / featureStds.Age;
+            const scaledGender = (encodedGender - featureMeans.Gender) / featureStds.Gender;
+            const scaledEducation = (encodedEducation - featureMeans.EducationLevel) / featureStds.EducationLevel;
+            const scaledJobTitle = (encodedJobTitle - featureMeans.JobTitle) / featureStds.JobTitle;
+            const scaledYearsOfExperience = (yearsOfExperience - featureMeans.YearsOfExperience) / featureStds.YearsOfExperience;
+
+            // Prepare features for prediction
+            const features = {
+                age: scaledAge,
+                gender: scaledGender,
+                educationLevel: scaledEducation,
+                jobTitle: scaledJobTitle,
+                yearsOfExperience: scaledYearsOfExperience
+            };
+
+            // --- Simulate Prediction ---
+            const predictedSalary = predictSalary(features);
+
+            // Display result
+            document.getElementById('predictedSalary').textContent = predictedSalary.toFixed(2);
+            document.getElementById('result').classList.remove('hidden');
+        });
+    </script>
+</body>
+</html>
